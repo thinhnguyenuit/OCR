@@ -47,7 +47,7 @@ def generate_lines(lines):
 def detectlines(image):
     img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(img, 50, 150, 3)
-    lines = cv2.HoughLines(edges, 1, np.pi/180, round(0.4 * img.shape[1]))
+    lines = cv2.HoughLines(edges, 1, np.pi/180, round(0.5 * img.shape[1]))
     if lines is None:
         lines = []
     lines_hough = generate_lines(lines)
@@ -269,7 +269,8 @@ def get_rows(img, page_row_pos):
 
 # img_path = r'D:\Desktop\PBE\VB GUI IT3_SO HOA_SO TTTT QBH-2.png'
 # img_path = r'D:\Desktop\PBE\1_6.png'
-img_path = r'D:\Desktop\PBE\D2D_2.png'
+img_path = r'D:\Desktop\PBE\Images\111.jpg'
+# img_path = "D:\Desktop\PBE\Images\96.signed_01-06.jpg"
 image = cv2.imread(img_path)
 
 def extractTable(image, name):
@@ -301,30 +302,27 @@ def extractTable(image, name):
 
     page_txt = []
     # i = 0
-    # crop= []
+    crop= []
     for boxes in page_box:
         col_txt = []
         for box in boxes:
             # crop.append(bo/x)
             boxed = process_img(box)
-            # crop.append(boxed)
+            crop.append(boxed)
             txt = pytesseract.image_to_string(boxed, lang='vie_fast', config=r'--psm 3')
             txt = txt.replace("\n", " ", -1)
             col_txt.append(txt)
-            print(txt)
+            # print(txt)
         page_txt.append(col_txt)
         # page_txt[str(i)] = col_txt
         # i = i + 1
 
     data = pd.DataFrame(page_txt)
     data.to_excel(name)
-    # i = 0
-    # for c in crop:
-        # cv2.imwrite(os.path.join(r'D:\Desktop\PBE\crop', str(i)+'.jpg'), c)
-        # i = i+ 1
-        # cv2.imshow('1', c)
-        # cv2.waitKey(0)
-        # cv2.destroyWindow('1')
+    i = 0
+    for c in crop:
+        cv2.imwrite(os.path.join(r'D:\Desktop\PBE\crop', str(i)+'.jpg'), c)
+        i = i+ 1
 
     # cv2.namedWindow('1', cv2.WINDOW_NORMAL)
     # cv2.imshow('1', img_line)

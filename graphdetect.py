@@ -32,14 +32,14 @@ thresh = cv2.threshold(med, 127, 255, cv2.THRESH_BINARY_INV)[1]
 #         y2 = int(y0 - 1000*(a))
 
 #         cv2.line(img,(x1,y1),(x2,y2),(0,0,255),2)
-ctrs = cv2.findContours(thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)[0]
-n_ctrs = sort_contours(ctrs)
+# ctrs = cv2.findContours(thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)[0]
+# n_ctrs = sort_contours(ctrs)
 
-performance = []
-for ctr in n_ctrs:
-    if cv2.contourArea(ctr):
-        x, y, w, h = cv2.boundingRect(ctr)
-        performance.append(h)
+# performance = []
+# for ctr in n_ctrs:
+#     if cv2.contourArea(ctr):
+#         x, y, w, h = cv2.boundingRect(ctr)
+#         performance.append(h)
 
 
 # cv2.drawContours(img, ctrs, -1, color=(0, 255, 90),thickness=2)
@@ -52,12 +52,12 @@ for ctr in n_ctrs:
 # cv2.imshow('2', img)
 # cv2.waitKey(0)
 
-objects = ('1', '2', '3', '4', '5', '6', '7', '8')
-y_pos = np.arange(len(ctrs))
-# # performance = [10,8,6,4,2,1]
+# objects = ('1', '2', '3', '4', '5', '6', '7', '8')
+# y_pos = np.arange(len(ctrs))
+# # # performance = [10,8,6,4,2,1]
 
-plt.bar(y_pos, performance, align='center', alpha=0.5)
-plt.xticks(y_pos, objects)
+# plt.bar(y_pos, performance, align='center', alpha=0.5)
+# plt.xticks(y_pos, objects)
 
 
-plt.show()
+# plt.show()

@@ -22,3 +22,4 @@ def sc(a):
         count()
         count1()
         j = j + 0.1
+    return i
