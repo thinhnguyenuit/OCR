@@ -9,7 +9,8 @@ from PIL import Image
 import pandas as pd
 import csv
 import io
-
+from toke import img_prcess
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 def pre_processing(img):
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
@@ -37,20 +38,20 @@ def pre_processing(img):
     return thresh
 
 # file_path = r"D:\Desktop\PBE\D2D_2.png"
-file_path = r"D:\Desktop\PBE\2019-09-06-11-03-08.png"
+file_path = r"D:\Desktop\PBE\Images\m.png"
 
 image = cv2.imread(file_path)
 # img = deskewing(img)
 # img = border(img)
+image = cv2.resize(image, None, fx=10, fy=10, interpolation=cv2.INTER_CUBIC)
 
 
-
-line_removed = remove_line(image)
+# line_removed = img_prcess(file_path)
 # cv2.imwrite("temp.png", line_removed)
 #file_path = "temp.png"
-img = pre_processing(line_removed)
+# img = pre_processing(line_removed)
 
-data = pytesseract.image_to_string(img, lang= 'vie_fast', config=r' --psm 3 tessedit_char_whitelist 0123456789-.')
+data = pytesseract.image_to_string(image, lang= 'vie_fast', config='--psm 10')
 
 print(data)
 

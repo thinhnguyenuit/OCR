@@ -4,7 +4,7 @@ import numpy as np
 
 def sort_contours(cnts):
     boundingBoxs = [cv2.boundingRect(c) for c in cnts]
-    (cnts, boundingBoxs) = zip(*sorted(zip(cnts, boundingBoxs), key=lambda b:b[1][0], reverse=False))
+    (cnts, boundingBoxs) = zip(*sorted(zip(cnts, boundingBoxs), key=lambda b:b[1][1], reverse=False))
     return cnts
 
 # img_path = r"D:\Desktop\PBE\area_graph.png"

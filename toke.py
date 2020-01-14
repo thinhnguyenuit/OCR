@@ -1,17 +1,24 @@
-import json
-import numpy as np
+from wand.image import Image
+from wand.display import display
 import cv2
+import matplotlib.pyplot as plt
+# file_name = r"D:\Desktop\PBE\Images\12out.png"
+# file_name = r"D:\Desktop\PBE\Images\33.jpg"
+# file_name = r"D:\Desktop\PBE\Images\D2D_2.png"
 
-img_path = r'D:\Desktop\PBE\VB GUI IT3_SO HOA_SO TTTT QBH-2.png'
-# img_path = r'D:\Desktop\PBE\1_6.png'
-image = cv2.imread(img_path)
 
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+# print(COLORSPACE_TYPES)
+def img_prcess(file_name):
+    img = Image(filename=file_name, colorspace='gray')
+    # img.adaptive_threshold(1000, 2000, 90)
+    # img.resize(700, 976)
+    img.alpha_channel = 'remove'
+    img.auto_threshold('otsu')
+    img.auto_orient()
+    img.deskew(10)
 
-kernel = np.ones((2,2), np.uint8)
-img_dilation = cv2.erode(thresh, kernel, iterations=1)
-
-# cv2.namedWindow('1', cv2.WINDOW_NORMAL)
-cv2.imshow('1', img_dilation)
-cv2.waitKey(0)
+    img.enhance()
+    # img.trim()
+    img.save(filename='abc.png')
+    i = cv2.imread('abc.png')
+    return i

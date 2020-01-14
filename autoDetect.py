@@ -71,13 +71,13 @@ def findBoxContours(img, thresh_value, kernel_x, kernel_y):
     dilate = cv2.dilate(thresh, kernel, iterations=1)
 
     contours = cv2.findContours(dilate.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-    print(len(contours))
+    # print(len(contours))
     boxes = []
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
         box = (x, y, x + w, y + h)
         boxes.append(box)
-    print(boxes)
+    # print(boxes)
     return boxes
 
 
