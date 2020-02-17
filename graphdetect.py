@@ -1,11 +1,14 @@
-import matplotlib.pyplot as plt ; plt.rcdefaults()
+import matplotlib.pyplot as plt; plt.rcdefaults()
 import cv2
 import numpy as np
 
+
 def sort_contours(cnts):
     boundingBoxs = [cv2.boundingRect(c) for c in cnts]
-    (cnts, boundingBoxs) = zip(*sorted(zip(cnts, boundingBoxs), key=lambda b:b[1][1], reverse=False))
+    (cnts, boundingBoxs) = zip(*sorted(zip(cnts, boundingBoxs),
+                                       key=lambda b: b[1][1], reverse=False))
     return cnts
+
 
 # img_path = r"D:\Desktop\PBE\area_graph.png"
 img_path = r"D:\Desktop\PBE\Highlight-Data-Bar-Chart-3.png"

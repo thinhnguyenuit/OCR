@@ -7,14 +7,19 @@ import re
 import xlsxwriter
 import os
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\
+                                        Tesseract-OCR\tesseract.exe'
+
 
 def pt_to_tuple(p):
     return (int(round(p[0])), int(round(p[1])))
 
+
 def pt(x, y, dtype=np.float):
+
     """Create a point in 2D space at <x>, <y>"""
     return np.array((x, y), dtype=dtype)
+
 
 def norm_angel(theta):
     pi2 = 2 * np.pi
@@ -32,6 +37,7 @@ def norm_angel(theta):
         theta_norm = theta
     return theta_norm
 
+
 def generate_lines(lines):
     lines_hough = []
     for line in lines:
@@ -44,6 +50,7 @@ def generate_lines(lines):
         lines_hough.append((rho, theta, theta_norm, line_dir))
     return lines_hough
 
+
 def detectlines(image):
     img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(img, 50, 150, 3)
@@ -52,6 +59,7 @@ def detectlines(image):
         lines = []
     lines_hough = generate_lines(lines)
     return lines_hough
+
 
 def project_lines(lines, img_w, img_h):
     if img_w <= 0:
@@ -65,10 +73,12 @@ def project_lines(lines, img_w, img_h):
         cos_theta = np.cos(theta)
         sin_theta = np.sin(theta)
 
-        x_miny = rho / cos_theta if cos_theta != 0 else float("inf")  # x for a minimal y (y=0)
-        y_minx = rho / sin_theta if sin_theta != 0 else float("inf")  # y for a minimal x (x=0)
-        x_maxy = (rho - img_w * sin_theta) / cos_theta if cos_theta != 0 else float("inf")  # x for maximal y (y=img_h)
-        y_maxx = (rho - img_h * cos_theta) / sin_theta if sin_theta != 0 else float("inf")  # y for maximal x (y=img_w)
+        x_miny = rho / cos_theta if cos_theta != 0 else float("inf")
+        y_minx = rho / sin_theta if sin_theta != 0 else float("inf")
+        x_maxy = (rho - img_w * sin_theta) / cos_theta \
+            if cos_theta != 0 else float("inf")
+        y_maxx = (rho - img_h * cos_theta) / sin_theta \
+            if sin_theta != 0 else float("inf")
 
         def border_dist(v, border):
             return v if v <= 0 else v - border
@@ -90,10 +100,11 @@ def project_lines(lines, img_w, img_h):
             else:
                 dismissed_pts.append((p, dist))
 
-        # from the dismissed points, get the needed ones that are closed to the canvas
         n_needed_pts = 2 - len(valid_pts)
         if n_needed_pts > 0:
-            dismissed_pts_sorted = sorted(dismissed_pts, key=lambda x: abs(x[1][0]), reverse=True)
+            dismissed_pts_sorted = sorted(dismissed_pts,
+                                          key=lambda x: abs(x[1][0]),
+                                          reverse=True)
 
             for _ in range(n_needed_pts):
                 p, (dist, coord_idx) = dismissed_pts_sorted.pop()
@@ -106,9 +117,12 @@ def project_lines(lines, img_w, img_h):
         lines_ab.append((p1, p2))
     return lines_ab
 
+
 def ab_lines(lines_hough, w, h):
     projected = project_lines([l[:2] for l in lines_hough], w, h)
-    return [(p1, p2, line_dir) for (p1, p2), (_, _, _, line_dir) in zip(projected, lines_hough)]
+    return [(p1, p2, line_dir) for (p1, p2), (_, _, _, line_dir) in
+            zip(projected, lines_hough)]
+
 
 def draw_line(img, lines, w, h):
     img_line = img.copy()
@@ -117,6 +131,7 @@ def draw_line(img, lines, w, h):
         line_color = (0, 0, 255) if line_dir == 'h' else (0, 255, 0)
         cv2.line(img_line, pt_to_tuple(p1), pt_to_tuple(p2), line_color, 2)
     return img_line
+
 
 def find_clusters_1d(vals, dist_thresh):
 
@@ -130,7 +145,7 @@ def find_clusters_1d(vals, dist_thresh):
 
     if len(vals) > 0:
         pos_indices_sorted = np.argsort(vals)      # indices of sorted values
-        gaps = np.diff(vals[pos_indices_sorted])   # calculate distance between sorted values
+        gaps = np.diff(vals[pos_indices_sorted])
 
         cur_clust = [pos_indices_sorted[0]]  # initialize with first index
 
@@ -147,11 +162,13 @@ def find_clusters_1d(vals, dist_thresh):
 
     return clusters
 
+
 def zip_clusters_and_values(clusters, values):
     """
-    Combine cluster indices in <clusters> (as returned from find_clusters_1d_break_dist) with the respective values
-    in <values>.
-    Return list of tuples, each tuple representing a cluster and containing two NumPy arrays:
+    Combine cluster indices in <clusters> (as returned from find_
+    clusters_1d_break_dist) with the respective values in <values>.
+    Return list of tuples, each tuple representing a cluster and containing
+    two NumPy arrays:
     1. cluster indices into <values>, 2. values of this cluster
     """
     if type(values) is not np.ndarray:
@@ -164,29 +181,32 @@ def zip_clusters_and_values(clusters, values):
 
     return clusters_w_vals
 
+
 def find_clusters(lines, direction, method, w, h, **kwargs):
     if not lines:
         raise ValueError("no lines")
     if direction not in ('v', 'h'):
         raise ValueError('invalid direction')
-    lines_in_dir = [l for l in lines if l[3]==direction]
+    lines_in_dir = [l for l in lines if l[3] == direction]
 
-    if len(lines_in_dir)==0:
+    if len(lines_in_dir) == 0:
         return []
 
     lines_ab = ab_lines(lines_in_dir, w, h)
 
     coord_idx = 0 if direction == 'v' else 1
-    positions = np.array([(l[0][coord_idx] + l[1][coord_idx]) / 2 for l in lines_ab])
+    positions = np.array([(l[0][coord_idx] + l[1][coord_idx]) / 2 for l
+                         in lines_ab])
     clusters = method(positions, **kwargs)
     if type(clusters) != list:
         raise ValueError("'method' returned invalid clusters (must be list)")
 
     if len(clusters) > 0 and type(clusters[0]) != np.ndarray:
-        raise ValueError("'method' returned invalid cluster elements (must be list of numpy.ndarray objects)")
+        raise ValueError("'method' returned invalid cluster elements")
 
     clusters_w_vals = zip_clusters_and_values(clusters, positions)
     return clusters_w_vals
+
 
 def draw_line_clusters(img, direction, clusters_w_vals):
     img_draw = img.copy()
@@ -207,7 +227,8 @@ def draw_line_clusters(img, direction, clusters_w_vals):
         draw_line_in_dir(img_draw, direction, vals, line_color)
     return img_draw
 
-def draw_line_in_dir(img, direction, line_positions, line_color, line_width = 2):
+
+def draw_line_in_dir(img, direction, line_positions, line_color, line_width=2):
 
     if direction not in ('h', 'v'):
         raise ValueError("invalid value for 'direction': '%s'" % direction)
@@ -226,35 +247,41 @@ def draw_line_in_dir(img, direction, line_positions, line_color, line_width = 2)
 
         cv2.line(img, p1, p2, line_color, line_width)
 
+
 def calc_cluster_centers_1d(clusters_w_vals, method=np.median):
     """
     Calculate the cluster centers (for 1D clusters) using <method>.
-    <clusters_w_vals> must be a sequence of tuples t where t[1] contains the values (as returned from
-    zip_clusters_and_values).
+    <clusters_w_vals> must be a sequence of tuples t where t[1] contains
+    the values (as returned from zip_clusters_and_values).
     """
     return [method(vals) for _, vals in clusters_w_vals]
 
+
 def process_img(img):
-    # resize = cv2.resize(img, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    thresh = cv2.threshold(gray, 0, 255,
+                           cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     return thresh
 
+
 def erosion(img):
-    kernel = np.ones((2,2), np.uint8)
+    kernel = np.ones((2, 2), np.uint8)
     eroded = cv2.erode(img, kernel, iterations=1)
     return eroded
+
 
 def get_cols(img, page_col_pos):
     imgg = img.copy()
     cols = []
     for i in range(len(page_col_pos)):
         if i == 0:
-            img_col =imgg[0:imgg.shape[0], 0:int(page_col_pos[i])]
+            img_col = imgg[0:imgg.shape[0], 0:int(page_col_pos[i])]
         else:
-            img_col =imgg[0:imgg.shape[0], int(page_col_pos[i-1]):int(page_col_pos[i])]
+            img_col = imgg[0:imgg.shape[0],
+                           int(page_col_pos[i-1]):int(page_col_pos[i])]
         cols.append(img_col)
     return cols
+
 
 def get_rows(img, page_row_pos):
     imgg = img.copy()
@@ -263,15 +290,18 @@ def get_rows(img, page_row_pos):
         if i == 0:
             img_row = imgg[0:int(page_row_pos[i]), 0:img.shape[1]]
         else:
-            img_row = imgg[int(page_row_pos[i-1]):int(page_row_pos[i]), 0:imgg.shape[1]]
+            img_row = imgg[int(page_row_pos[i-1]):int(page_row_pos[i]),
+                           0:imgg.shape[1]]
         rows.append(img_row)
     return rows
 
-# img_path = r'D:\Desktop\PBE\VB GUI IT3_SO HOA_SO TTTT QBH-2.png'
+
+img_path = r'D:\Desktop\PBE\VB GUI IT3_SO HOA_SO TTTT QBH-2.png'
 # img_path = r'D:\Desktop\PBE\1_6.png'
-img_path = r'D:\Desktop\PBE\Images\111.jpg'
+# img_path = r'D:\Desktop\PBE\Images\111.jpg'
 # img_path = "D:\Desktop\PBE\Images\96.signed_01-06.jpg"
 image = cv2.imread(img_path)
+
 
 def extractTable(image, name):
     h, w = image.shape[:2]
@@ -280,11 +310,12 @@ def extractTable(image, name):
     # print(len(lines))
     img_line = draw_line(image, lines, w, h)
 
-    vertical_clusters = find_clusters(lines, 'v', find_clusters_1d, w, h, dist_thresh=30)
-    horizontal_clusters = find_clusters(lines, 'h', find_clusters_1d, w, h, dist_thresh=30)
+    vertical_clusters = find_clusters(lines, 'v', find_clusters_1d, w, h,
+                                      dist_thresh=30)
+    horizontal_clusters = find_clusters(lines, 'h', find_clusters_1d, w, h,
+                                        dist_thresh=30)
     # print(len(vertical_clusters))
     img_clus = draw_line_clusters(image, 'h', horizontal_clusters)
-
 
     page_col_pos = np.array(calc_cluster_centers_1d(vertical_clusters))
     page_row_pos = np.array(calc_cluster_centers_1d(horizontal_clusters))
@@ -299,17 +330,17 @@ def extractTable(image, name):
         box = get_cols(row, page_col_pos)
         page_box.append(box)
 
-
     page_txt = []
     # i = 0
-    crop= []
+
+    crop = []
     for boxes in page_box:
         col_txt = []
         for box in boxes:
             # crop.append(bo/x)
             boxed = process_img(box)
             crop.append(boxed)
-            txt = pytesseract.image_to_string(boxed, lang='vie_fast', config=r'--psm 3')
+            txt = pytesseract.image_to_string(boxed, lang='vie_fast')
             txt = txt.replace("\n", " ", -1)
             col_txt.append(txt)
             # print(txt)
@@ -320,14 +351,15 @@ def extractTable(image, name):
     data = pd.DataFrame(page_txt)
     data.to_excel(name)
     i = 0
-    for c in crop:
-        cv2.imwrite(os.path.join(r'D:\Desktop\PBE\crop', str(i)+'.jpg'), c)
-        i = i+ 1
+    # for c in crop:
+    #     cv2.imwrite(os.path.join(r'D:\Desktop\PBE\crop', str(i)+'.jpg'), c)
+    #     i = i+ 1
 
     # cv2.namedWindow('1', cv2.WINDOW_NORMAL)
     # cv2.imshow('1', img_line)
     # cv2.imshow('2', img_clus)
     # cv2.waitKey(0)
+
 
 name = 'vd1.xlsx'
 extractTable(image, name)

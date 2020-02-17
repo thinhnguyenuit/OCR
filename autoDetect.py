@@ -18,9 +18,9 @@ def IOU(boxA, boxB):
     return iou
 
 
-img1_path = '7.jpg'
-img2_path = '3.jpg'
-img3_path = '33.jpg'
+img1_path = '/Images/7.jpg'
+img2_path = 'Images/3.jpg'
+img3_path = 'Images/33.jpg'
 img4_path = r'D:\OCR\jquery-select-areas-master\example\image.png'
 
 image1 = cv2.imread(img1_path)
@@ -30,7 +30,7 @@ gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 image2 = cv2.imread(img2_path)
 img2 = cv2.resize(image2, (1653, 2339))
 
-image3 = cv2.imread(img4_path)
+image3 = cv2.imread(img3_path)
 img3 = cv2.resize(image3, (1653, 2339))
 
 def toGray(img):
